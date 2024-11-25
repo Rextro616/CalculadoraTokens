@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora con Árbol Sintáctico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+        }
+        .display {
+            width: 100%;
+            height: 50px;
+            font-size: 24px;
+            text-align: right;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+        }
+        .buttons button {
+            padding: 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .buttons button:hover {
+            background-color: #ddd;
+        }
+        .operator {
+            background-color: #f0ad4e;
+            color: white;
+        }
+        .operator:hover {
+            background-color: #ec971f;
+        }
+        .equals {
+            background-color: #5cb85c;
+            color: white;
+            grid-column: span 2;
+        }
+        .equals:hover {
+            background-color: #4cae4c;
+        }
+        .clear {
+            background-color: #d9534f;
+            color: white;
+        }
+        .clear:hover {
+            background-color: #c9302c;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .result {
+            color: green;
+            margin-top: 10px;
+            font-size: 20px;
+        }
+        .tree-container {
+            margin-top: 20px;
+        }
+        .tokens-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .tokens-container h3 {
+            margin-bottom: 10px;
+        }
+        .tokens-container ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .tokens-container li {
+            background: #f9f9f9;
+            margin-bottom: 5px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora</h1>
+        <form method="POST" id="calc-form">
+            <input type="hidden" name="expression" id="expression-input">
+        </form>
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button onclick="appendToExpression('7')">7</button>
+            <button onclick="appendToExpression('8')">8</button>
+            <button onclick="appendToExpression('9')">9</button>
+            <button class="operator" onclick="appendToExpression('/')">/</button>
+
+            <button onclick="appendToExpression('4')">4</button>
+            <button onclick="appendToExpression('5')">5</button>
+            <button onclick="appendToExpression('6')">6</button>
+            <button class="operator" onclick="appendToExpression('*')">*</button>
+
+            <button onclick="appendToExpression('1')">1</button>
+            <button onclick="appendToExpression('2')">2</button>
+            <button onclick="appendToExpression('3')">3</button>
+            <button class="operator" onclick="appendToExpression('-')">-</button>
+
+            <button onclick="appendToExpression('0')">0</button>
+            <button onclick="appendToExpression('.')">.</button>
+            <button class="equals" onclick="submitExpression()">=</button>
+            <button class="operator" onclick="appendToExpression('+')">+</button>
+
+            <button class="clear" onclick="clearExpression()">C</button>
+            <button class="clear" onclick="deleteLast()">DEL</button>
+        </div>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+        {% if result is not none %}
+            <p class="result">Resultado: {{ result }}</p>
+        {% endif %}
+        {% if tokens_data %}
+            <div class="tokens-container">
+                <h3>Análisis de Tokens</h3>
+                <p>Total Números Enteros: {{ tokens_data.total_numbers }}</p>
+                <p>Total Operadores: {{ tokens_data.total_operators }}</p>
+                <h4>Listado de Tokens:</h4>
+                <ul>
+                    {% for token in tokens_data.tokens_list %}
+                        <li><strong>{{ token.type }}</strong>: {{ token.value }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+    </div>
+
+    {% if tree_path %}
+            <div class="tree-container">
+                <h2>Árbol Sintáctico Generado</h2>
+                <img src="{{ tree_path }}" alt="Árbol Sintáctico">
+            </div>
+        {% endif %}
+
+    <script>
+        let expression = '';
+
+        function appendToExpression(value) {
+            expression += value;
+            updateDisplay();
+        }
+
+        function clearExpression() {
+            expression = '';
+            updateDisplay();
+        }
+
+        function deleteLast() {
+            if (expression.length > 0) {
+                expression = expression.slice(0, -1);
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            const display = document.getElementById('display');
+            display.textContent = expression === '' ? '0' : expression;
+            document.getElementById('expression-input').value = expression;
+        }
+
+        function submitExpression() {
+            if (expression === '') return;
+            document.getElementById('calc-form').submit();
+        }
+
+        // Opcional: Manejar el envío con Enter
+        document.getElementById('display').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitExpression();
+            }
+        });
+    </script>
+</body>
+</html>
